@@ -1,12 +1,3 @@
-cmake_minimum_required(VERSION 3.12)
-
-project(MobileUI LANGUAGES CXX)
-
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_AUTOMOC ON)
-
-################################################################################
-
 if(NOT QT_DEFAULT_MAJOR_VERSION)
     set(QT_DEFAULT_MAJOR_VERSION 6 CACHE STRING "Qt version to use (5 or 6), defaults to 6")
 endif()
@@ -40,8 +31,29 @@ endif()
 
 ################################################################################
 
-add_library(MobileUI OBJECT ${CORE_SOURCES} ${PLATFORM_SOURCES})
-add_library(MobileUI::MobileUI ALIAS MobileUI)
+set(MODULE_NAME MobileUI)
+set(LIB_NAME ${MODULE_NAME}Lib)
 
-target_link_libraries(MobileUI PRIVATE ${CORE_LIBRARIES} ${PLATFORM_LIBRARIES})
-target_include_directories(MobileUI PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+qt_add_library(${LIB_NAME} STATIC)
+
+set_target_properties(${LIB_NAME} PROPERTIES AUTOMOC ON)
+target_link_libraries(${LIB_NAME} PRIVATE ${CORE_LIBRARIES} ${PLATFORM_LIBRARIES})
+target_compile_definitions(${LIB_NAME} PUBLIC APP_NAME=\"${APP_NAME}\" APP_VERSION=\"${APP_VERSION}\")
+
+list(APPEND MODULE_QML_FILES
+
+)
+list(APPEND MODULE_SOURCE_FILES
+        ${CORE_SOURCES}
+        ${PLATFORM_SOURCES}
+)
+
+qt_add_qml_module(${LIB_NAME}
+        URI ${MODULE_NAME}
+        VERSION 1.0
+        RESOURCE_PREFIX /
+        QML_FILES  ${MODULE_QML_FILES}
+        RESOURCES  ${MODULE_RESOURCES}
+        SOURCES ${MODULE_SOURCE_FILES}
+        OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${MODULE_NAME}"
+)
